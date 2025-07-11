@@ -1,8 +1,38 @@
-# Claude_base
-base for using Claude Code
+## 🔧 Step-by-Step Implementation
 
+### Step 1: Create Features from PRD
+```bash
+# Generate feature breakdown from PRD
+claude-code commands/feature-creator.md
 
-# Complete Usage Instructions & Examples
+# This creates:
+# - features/feature_001.md (Document Processing)
+# - features/feature_002.md (NES Validation Engine) 
+# - features/feature_003.md (Chat Interface)
+# - progress/ directories for each feature
+```
+
+**Expected Output:**
+```
+✅ Created 3 features from PRD:
+📄 feature_001.md - Document Processing System
+🔍 feature_002.md - NES Compliance Validation Engine  
+💬 feature_003.md - Spanish Chat Interface
+
+📊 Progress tracking initialized in progress/ directory
+🧪 Test specifications generated for each feature
+```
+
+### Step 2: Generate Test Datasets
+```bash
+# Create comprehensive test datasets for document processing
+claude-code commands/dataset-generator.md --feature=feature_001
+
+# Create NES compliance test scenarios
+claude-code commands/dataset-generator.md --feature=feature_002 --type=validation
+
+# Create conversation flow test data
+claude-code commands/dataset# Complete Usage Instructions & Examples
 
 ## 🚀 Quick Start: Document Analysis System
 
@@ -10,6 +40,57 @@ This guide shows how to use all the Claude Code commands to build your Spanish N
 
 ## 📁 Initial Setup
 
+### 1. Complete Environment Setup
+```bash
+# First, setup the complete development environment
+claude-code environment-setup.md --project-name=spanish-nes-analyzer
+
+# This automatically creates:
+# - Python virtual environment in backend/venv/
+# - Node.js setup for frontend (if needed)
+# - Complete Makefile with all commands
+# - .env template with required variables
+# - .gitignore with proper exclusions
+# - Project directory structure
+# - Logging and monitoring setup
+```
+
+### 2. Install Dependencies and Start Development
+```bash
+# Setup and install everything
+make setup && make install
+
+# Verify environment health
+make health
+
+# Start development servers
+make dev
+
+# Monitor logs in real-time (in another terminal)
+make logs
+```
+
+### 3. Copy Command Files
+```bash
+# Copy all Claude Code commands to commands folder
+cp feature-creator.md commands/
+cp feature-developer.md commands/
+cp dataset-generator.md commands/
+cp feature-tester.md commands/
+cp progress-tracker.md commands/
+cp context-manager.md commands/
+cp environment-setup.md commands/
+```
+
+### 4. Configure Environment Variables
+```bash
+# Edit .env file with your actual API keys
+nano .env
+
+# Required variables:
+GEMINI_API_KEY=your_actual_gemini_key_here
+LANGWATCH_API_KEY=your_actual_langwatch_key_here
+OPENAI_API_KEY=your_actual_openai_key_here  # For LangWatch user simulation
 ```
 
 ### 2. Create Initial PRD
