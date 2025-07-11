@@ -1,23 +1,31 @@
 ## 🔧 Step-by-Step Implementation
 
+### Prerequisites
+```bash
+# Install Claude Code if not already installed
+npm install -g @anthropic-ai/claude-code
+
+# Verify installation
+claude-code --version
+```
+
 ### Step 1: Create Features from PRD
 ```bash
 # Generate feature breakdown from PRD
 claude-code commands/feature-creator.md
 
-# This creates:
-# - features/feature_001.md (Document Processing)
-# - features/feature_002.md (NES Validation Engine) 
-# - features/feature_003.md (Chat Interface)
-# - progress/ directories for each feature
+# This analyzes your prd.md and creates:
+# - features/feature_XXX.md files for each identified feature
+# - progress/ directories for tracking
+# - comprehensive test specifications
 ```
 
 **Expected Output:**
 ```
-✅ Created 3 features from PRD:
-📄 feature_001.md - Document Processing System
-🔍 feature_002.md - NES Compliance Validation Engine  
-💬 feature_003.md - Spanish Chat Interface
+✅ Created features from PRD:
+📄 feature_001.md - [Your Domain-Specific Feature 1]
+🔍 feature_002.md - [Your Domain-Specific Feature 2]  
+💬 feature_003.md - [Your Domain-Specific Feature 3]
 
 📊 Progress tracking initialized in progress/ directory
 🧪 Test specifications generated for each feature
@@ -25,236 +33,97 @@ claude-code commands/feature-creator.md
 
 ### Step 2: Generate Test Datasets
 ```bash
-# Create comprehensive test datasets for document processing
+# Create comprehensive test datasets for each feature
 claude-code commands/dataset-generator.md --feature=feature_001
 
-# Create NES compliance test scenarios
+# Create domain-specific validation scenarios
 claude-code commands/dataset-generator.md --feature=feature_002 --type=validation
 
-# Create conversation flow test data
-claude-code commands/dataset# Complete Usage Instructions & Examples
-
-## 🚀 Quick Start: Document Analysis System
-
-This guide shows how to use all the Claude Code commands to build your Spanish NES document analysis system.
-
-## 📁 Initial Setup
-
-### 1. Complete Environment Setup
-```bash
-# First, setup the complete development environment
-claude-code environment-setup.md --project-name=spanish-nes-analyzer
-
-# This automatically creates:
-# - Python virtual environment in backend/venv/
-# - Node.js setup for frontend (if needed)
-# - Complete Makefile with all commands
-# - .env template with required variables
-# - .gitignore with proper exclusions
-# - Project directory structure
-# - Logging and monitoring setup
-```
-
-### 2. Install Dependencies and Start Development
-```bash
-# Setup and install everything
-make setup && make install
-
-# Verify environment health
-make health
-
-# Start development servers
-make dev
-
-# Monitor logs in real-time (in another terminal)
-make logs
-```
-
-### 3. Copy Command Files
-```bash
-# Copy all Claude Code commands to commands folder
-cp feature-creator.md commands/
-cp feature-developer.md commands/
-cp dataset-generator.md commands/
-cp feature-tester.md commands/
-cp progress-tracker.md commands/
-cp context-manager.md commands/
-cp environment-setup.md commands/
-```
-
-### 4. Configure Environment Variables
-```bash
-# Edit .env file with your actual API keys
-nano .env
-
-# Required variables:
-GEMINI_API_KEY=your_actual_gemini_key_here
-LANGWATCH_API_KEY=your_actual_langwatch_key_here
-OPENAI_API_KEY=your_actual_openai_key_here  # For LangWatch user simulation
-```
-
-### 2. Create Initial PRD
-```bash
-# Create your Product Requirements Document
-cat > prd.md << 'EOF'
-# Spanish NES Document Analysis System
-
-## Overview
-An intelligent document analysis system that validates documents against Spanish NES (Esquema Nacional de Seguridad) compliance standards.
-
-## Core Requirements
-
-### Document Processing
-- Support PDF and DOCX formats
-- Extract text content reliably
-- Handle corrupted or malformed files gracefully
-- Process documents up to 10MB efficiently
-
-### NES Compliance Validation
-- **Backups**: Validate backup procedures, frequency, verification, remote storage
-- **Access Control**: Check authentication systems, MFA, privilege management, audit logs
-- **Monitoring**: Verify network monitoring, intrusion detection, incident response procedures
-
-### User Interface
-- Chat-based interaction in Spanish
-- Progressive document analysis workflow
-- Clear validation results with specific NES recommendations
-- Support for multiple document uploads
-
-### Technical Requirements
-- Use Google Gemini via LiteLLM for analysis
-- Implement LangWatch monitoring for all LLM calls
-- Follow SOLID architecture principles
-- Comprehensive error handling and logging
-- 90%+ test coverage with realistic scenarios
-
-## Success Criteria
-- Accurately identifies NES compliance gaps
-- Processes documents within 30 seconds
-- Provides actionable recommendations
-- Handles edge cases gracefully
-- Maintains conversation context across interactions
-EOF
-```
-
-## 🔧 Step-by-Step Implementation
-
-### Step 1: Create Features from PRD
-```bash
-# Generate feature breakdown from PRD
-claude-code commands/feature-creator.md
-
-# This creates:
-# - features/feature_001.md (Document Processing)
-# - features/feature_002.md (NES Validation Engine) 
-# - features/feature_003.md (Chat Interface)
-# - progress/ directories for each feature
-```
-
-**Expected Output:**
-```
-✅ Created 3 features from PRD:
-📄 feature_001.md - Document Processing System
-🔍 feature_002.md - NES Compliance Validation Engine  
-💬 feature_003.md - Spanish Chat Interface
-
-📊 Progress tracking initialized in progress/ directory
-🧪 Test specifications generated for each feature
-```
-
-### Step 2: Generate Test Datasets
-```bash
-# Create comprehensive test datasets for document processing
-claude-code commands/dataset-generator.md --feature=feature_001
-
-# Create NES compliance test scenarios
-claude-code commands/dataset-generator.md --feature=feature_002 --type=validation
-
-# Create conversation flow test data
-claude-code commands/dataset-generator.md --feature=feature_003 --type=conversation
+# Create user interaction test data
+claude-code commands/dataset-generator.md --feature=feature_003 --type=interaction
 ```
 
 **Expected Output:**
 ```
 📁 datasets/feature_001/
-├── test_data.json          # PDF/DOCX samples
+├── test_data.json          # Sample input data
 ├── validation_cases.json   # Expected outcomes
-├── edge_cases.json         # Corrupted files, large docs
+├── edge_cases.json         # Error scenarios, boundary conditions
 └── performance_data.json   # Load testing data
 
 📁 datasets/feature_002/
-├── nes_compliance_examples.json  # Valid/invalid examples
-├── langwatch_scenarios.json      # LLM testing scenarios
-└── mock_responses.json           # Expected AI responses
+├── domain_examples.json       # Valid/invalid domain-specific examples
+├── langwatch_scenarios.json   # LLM testing scenarios (if applicable)
+└── mock_responses.json        # Expected system responses
 
 📁 datasets/feature_003/
-├── conversation_flows.json       # Multi-turn conversations
-├── memory_test_scenarios.json    # Context preservation tests
-└── spanish_language_tests.json   # Language-specific validation
+├── user_flows.json            # User interaction workflows
+├── state_test_scenarios.json  # State management tests
+└── domain_language_tests.json # Domain-specific terminology validation
 ```
 
 ### Step 3: Implement Core Features
 ```bash
-# Start with document processing (foundational)
+# Start with foundational feature (usually data processing)
 claude-code commands/feature-developer.md --feature=feature_001
 
-# Then implement NES validation engine
+# Then implement business logic feature
 claude-code commands/feature-developer.md --feature=feature_002
 
-# Finally the chat interface
+# Finally implement user interface/interaction feature
 claude-code commands/feature-developer.md --feature=feature_003
 ```
 
-**Implementation follows this pattern for each feature:**
+**Implementation follows Clean Architecture pattern for each feature:**
 
 ```python
-# Generated structure for feature_001 (Document Processing)
+# Generated structure example for feature_001
 src/
 ├── features/
 │   └── feature_001/
 │       ├── domain/
 │       │   ├── entities/
-│       │   │   ├── document.py
+│       │   │   ├── data_item.py
 │       │   │   └── processing_result.py
 │       │   ├── repositories/
-│       │   │   └── document_repository.py
+│       │   │   └── data_repository.py
 │       │   └── services/
-│       │       ├── pdf_processor.py
-│       │       └── docx_processor.py
+│       │       ├── data_processor.py
+│       │       └── validator.py
 │       ├── application/
 │       │   ├── use_cases/
-│       │   │   └── process_document.py
+│       │   │   └── process_data.py
 │       │   └── dto/
-│       │       └── document_dto.py
+│       │       └── data_dto.py
 │       ├── infrastructure/
 │       │   ├── adapters/
-│       │   │   ├── pypdf_adapter.py
-│       │   │   └── python_docx_adapter.py
+│       │   │   ├── file_adapter.py
+│       │   │   └── api_adapter.py
 │       │   └── clients/
-│       │       └── file_storage_client.py
+│       │       └── external_service_client.py
 │       └── presentation/
 │           ├── controllers/
-│           │   └── document_controller.py
+│           │   └── data_controller.py
 │           └── validators/
-│               └── file_validator.py
+│               └── input_validator.py
 └── shared/
-    ├── llm/
+    ├── llm/              # If LLM integration needed
     │   ├── litellm_client.py
-    │   └── langwatch_setup.py
+    │   └── scenario_setup.py
     └── exceptions/
-        └── document_exceptions.py
+        └── domain_exceptions.py
 ```
 
 ### Step 4: Run Comprehensive Testing
 ```bash
-# Test document processing with real files
+# Test foundational feature with complete test suite
 claude-code commands/feature-tester.md --feature=feature_001 --suite=all
 
-# Validate NES compliance engine with LLM scenarios
-claude-code commands/feature-tester.md --feature=feature_002 --langwatch
+# Validate business logic with domain-specific scenarios
+claude-code commands/feature-tester.md --feature=feature_002 --scenario-testing
 
-# Test conversation memory and Spanish language handling
-claude-code commands/feature-tester.md --feature=feature_003 --conversation-memory
+# Test user interaction and state management
+claude-code commands/feature-tester.md --feature=feature_003 --integration-tests
 ```
 
 ### Step 5: Track Progress and Manage Context
@@ -297,35 +166,35 @@ claude-code commands/feature-developer.md --feature=feature_001 --optimize
 
 ## 🧪 LangWatch Scenario Testing Example
 
-Here's how the system generates sophisticated testing for your document analysis:
+Here's how the system generates sophisticated testing for LLM-integrated features:
 
 ```python
 # Auto-generated in datasets/feature_002/langwatch_scenarios.json
 {
-  "nes_compliance_scenarios": [
+  "domain_validation_scenarios": [
     {
-      "scenario_id": "backup_validation_incomplete",
-      "description": "Test NES backup compliance validation with incomplete information",
-      "input_document": "Tenemos copias de seguridad en un NAS QNAP de 8TB",
+      "scenario_id": "business_rule_validation_incomplete",
+      "description": "Test domain-specific validation with incomplete information",
+      "input_data": "Sample business data for validation",
       "expected_analysis": {
-        "compliance_gaps": [
-          "missing_backup_frequency",
-          "missing_verification_process", 
-          "missing_recovery_procedures",
-          "missing_offsite_backup"
+        "validation_gaps": [
+          "missing_required_field_1",
+          "missing_validation_rule_2", 
+          "incomplete_business_logic",
+          "missing_error_handling"
         ],
-        "nes_requirements_missing": [
-          "Frecuencia de copias específica",
-          "Proceso de verificación de integridad",
-          "Plan de recuperación con RTO/RPO",
-          "Ubicación remota de respaldo"
+        "domain_requirements_missing": [
+          "Specific business requirement 1",
+          "Quality standard verification",
+          "Compliance check implementation",
+          "Error recovery procedure"
         ]
       },
       "langwatch_criteria": {
         "accuracy": ">=85%",
         "identifies_all_gaps": true,
-        "provides_nes_guidance": true,
-        "maintains_spanish_language": true
+        "provides_domain_guidance": true,
+        "maintains_terminology_consistency": true
       }
     }
   ]
@@ -341,17 +210,17 @@ The system provides continuous feedback:
 claude-code commands/progress-tracker.md --feature=feature_001
 
 # Output:
-Feature 001: Document Processing System
+Feature 001: [Your Feature Name]
 ├── Status: 🟡 In Progress (75% complete)
 ├── Phase: Implementation
 ├── Tests: 18/23 passing (78%)
 ├── Blockers: 1 medium priority
 ├── Next: Complete infrastructure layer
-└── ETA: 2024-07-12 16:00
+└── ETA: [Estimated completion date]
 
 Quality Gates:
 ├── Code Coverage: 82% (target: 90%) ⚠️ 
-├── LLM Accuracy: 89% (target: 85%) ✅
+├── Business Logic: 89% (target: 85%) ✅
 ├── Performance: 94% (target: 90%) ✅
 └── Architecture: SOLID compliant ✅
 ```
@@ -370,7 +239,7 @@ claude-code commands/context-manager.md --feature=feature_002 --new-session
 # - Next priority tasks
 # - Architectural decisions made
 # - Recent code changes
-# - Context7 commands to run first
+# - Recommended research commands to run first
 ```
 
 ## 🎯 Integration with Claude Code
@@ -396,26 +265,26 @@ claude-code commands/feature-developer.md --feature=feature_001 --validate-stand
 claude-code commands/feature-tester.md --feature=feature_001 --generate-report
 ```
 
-### Integration with Context7
+### Integration with Research Tools
 ```bash
-# Commands automatically suggest Context7 usage
+# Commands automatically suggest research commands
 claude-code commands/feature-developer.md --feature=feature_001
 
-# Auto-generates Context7 commands like:
-# context7 search "PyPDF2 latest documentation error handling"
-# context7 search "python-docx best practices large files"
-# context7 search "LiteLLM Gemini API integration patterns"
+# Auto-generates research suggestions like:
+# "Search for [your-library] latest documentation and best practices"
+# "Look up domain-specific implementation patterns"
+# "Research integration patterns for your technology stack"
 ```
 
 ## 🚨 Common Issues and Solutions
 
-### Issue: LLM Calls Failing
+### Issue: External Service Integration Failing
 ```bash
 # Check environment setup
 claude-code commands/progress-tracker.md --feature=feature_001 --validate-env
 
-# Verify .env file has required keys:
-# GEMINI_API_KEY, LANGWATCH_API_KEY, OPENAI_API_KEY
+# Verify .env file has required keys for your domain:
+# YOUR_API_KEY, SERVICE_API_KEY, etc.
 ```
 
 ### Issue: Tests Failing
@@ -442,8 +311,18 @@ The system tracks multiple success indicators:
 
 - **Feature Completion**: Percentage and quality gates
 - **Test Coverage**: Unit, integration, and scenario tests
-- **LLM Performance**: Accuracy, consistency, response time
+- **Business Logic Performance**: Accuracy, consistency, response time
 - **Code Quality**: SOLID compliance, maintainability
-- **User Experience**: Conversation flow, memory retention
+- **User Experience**: Interface usability, system reliability
 
-Use these commands to build, test, and maintain your Spanish NES document analysis system with confidence and efficiency!
+Use these commands to build, test, and maintain your domain-specific application with confidence and efficiency!
+
+## 🎯 Customization for Your Domain
+
+To adapt this template for your specific domain:
+
+1. **Update PRD**: Modify `prd.md` with your domain requirements
+2. **Configure Environment**: Set up `.env` with your API keys and services
+3. **Customize Commands**: Adapt command parameters for your technology stack
+4. **Domain Testing**: Create domain-specific test scenarios and validation rules
+5. **Technology Stack**: Replace example libraries with those relevant to your domain

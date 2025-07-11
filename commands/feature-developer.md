@@ -60,7 +60,7 @@ src/
 ├── shared/
 │   ├── llm/
 │   │   ├── litellm_client.py
-│   │   └── langwatch_setup.py
+│   │   └── scenario_setup.py
 │   ├── utils/
 │   └── exceptions/
 └── tests/
@@ -78,122 +78,143 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+# Load API keys relevant to your project
+API_KEY = os.getenv('YOUR_LLM_API_KEY')  # Replace with your actual API key name
 ```
 
 #### LiteLLM Implementation:
 ```python
 from litellm import completion
-from langwatch import langwatch
+from langwatch_scenario import Scenario
 
 class LLMService:
     def __init__(self):
-        self.model = "gemini/gemini-pro"
-        langwatch.api_key = os.getenv('LANGWATCH_API_KEY')
-    
-    @langwatch.trace()
-    def analyze_document(self, content: str, validation_type: str) -> dict:
-        response = completion(
-            model=self.model,
-            messages=[
-                {"role": "system", "content": "You are a document validator..."},
-                {"role": "user", "content": f"Analyze: {content}"}
-            ],
-            api_key=GEMINI_API_KEY
+        self.model = "your-preferred-model"  # e.g., "gpt-4", "gemini/gemini-pro", etc.
+        self.scenario = Scenario(
+            api_key=os.getenv('LANGWATCH_API_KEY'),
+            project_id="your-project-name"
         )
-        return response.choices[0].message.content
+    
+    def analyze_content(self, content: str, analysis_type: str) -> dict:
+        # Use scenario testing for LLM calls
+        with self.scenario.trace_call("content_analysis") as trace:
+            trace.input(content=content, analysis_type=analysis_type)
+            
+            response = completion(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": "You are an intelligent assistant..."},
+                    {"role": "user", "content": f"Analyze: {content}"}
+                ],
+                api_key=os.getenv('YOUR_LLM_API_KEY')
+            )
+            
+            result = response.choices[0].message.content
+            trace.output(result=result)
+            return result
 ```
 
-### Document Analysis Feature Example:
+### Generic Feature Implementation Example:
 
 #### Domain Layer:
 ```python
-# entities/document.py
+# entities/data_item.py
 @dataclass
-class Document:
+class DataItem:
     id: str
     content: str
-    file_type: str
+    item_type: str
     metadata: Dict[str, Any]
     
     def is_valid_format(self) -> bool:
-        return self.file_type in ['pdf', 'docx', 'txt']
+        return self.item_type in ['text', 'json', 'csv', 'xml']  # Adjust for your domain
 
-# repositories/document_repository.py
+# repositories/data_repository.py
 from abc import ABC, abstractmethod
 
-class DocumentRepository(ABC):
+class DataRepository(ABC):
     @abstractmethod
-    def save(self, document: Document) -> str:
+    def save(self, item: DataItem) -> str:
         pass
     
     @abstractmethod
-    def get_by_id(self, doc_id: str) -> Optional[Document]:
+    def get_by_id(self, item_id: str) -> Optional[DataItem]:
         pass
 ```
 
 #### Application Layer:
 ```python
-# use_cases/analyze_document.py
-class AnalyzeDocumentUseCase:
+# use_cases/process_data.py
+class ProcessDataUseCase:
     def __init__(self, 
-                 document_repo: DocumentRepository,
+                 data_repo: DataRepository,
                  llm_service: LLMService,
-                 validator: DocumentValidator):
-        self._document_repo = document_repo
+                 processor: DataProcessor):
+        self._data_repo = data_repo
         self._llm_service = llm_service
-        self._validator = validator
+        self._processor = processor
     
-    def execute(self, document_id: str, validation_rules: List[str]) -> ValidationResult:
-        document = self._document_repo.get_by_id(document_id)
-        if not document:
-            raise DocumentNotFoundError(document_id)
+    def execute(self, data_id: str, processing_rules: List[str]) -> ProcessingResult:
+        data_item = self._data_repo.get_by_id(data_id)
+        if not data_item:
+            raise DataItemNotFoundError(data_id)
         
-        # Use LLM for analysis
-        analysis = self._llm_service.analyze_document(
-            document.content, 
-            validation_rules
+        # Use LLM for analysis if needed
+        analysis = self._llm_service.analyze_content(
+            data_item.content, 
+            processing_rules
         )
         
         # Apply business rules
-        result = self._validator.validate(document, analysis)
+        result = self._processor.process(data_item, analysis)
         
         return result
 ```
 
 #### Infrastructure Layer:
 ```python
-# adapters/pdf_processor.py
-import PyPDF2
+# adapters/data_processor.py
+import json
 from typing import Protocol
 
-class DocumentProcessor(Protocol):
-    def extract_text(self, file_path: str) -> str: ...
+class DataProcessor(Protocol):
+    def process_data(self, file_path: str) -> str: ...
 
-class PDFProcessor:
-    def extract_text(self, file_path: str) -> str:
-        with open(file_path, 'rb') as file:
-            reader = PyPDF2.PdfReader(file)
-            text = ""
-            for page in reader.pages:
-                text += page.extract_text()
-        return text
+class JSONProcessor:
+    def process_data(self, file_path: str) -> dict:
+        with open(file_path, 'r') as file:
+            data = json.load(file)
+        return data
+
+class TextProcessor:
+    def process_data(self, file_path: str) -> str:
+        with open(file_path, 'r') as file:
+            content = file.read()
+        return content
 
 # clients/llm_client.py
 class LiteLLMClient:
     def __init__(self):
-        self.model = "gemini/gemini-pro"
-        self.api_key = os.getenv('GEMINI_API_KEY')
-        langwatch.api_key = os.getenv('LANGWATCH_API_KEY')
-    
-    @langwatch.trace()
-    def complete(self, messages: List[Dict]) -> str:
-        response = completion(
-            model=self.model,
-            messages=messages,
-            api_key=self.api_key
+        self.model = "your-preferred-model"  # Configure for your LLM provider
+        self.api_key = os.getenv('YOUR_LLM_API_KEY')
+        self.scenario = Scenario(
+            api_key=os.getenv('LANGWATCH_API_KEY'),
+            project_id="your-project-name"
         )
-        return response.choices[0].message.content
+    
+    def complete(self, messages: List[Dict]) -> str:
+        with self.scenario.trace_call("llm_completion") as trace:
+            trace.input(messages=messages, model=self.model)
+            
+            response = completion(
+                model=self.model,
+                messages=messages,
+                api_key=self.api_key
+            )
+            
+            result = response.choices[0].message.content
+            trace.output(result=result)
+            return result
 ```
 
 ### Testing Implementation:
@@ -233,17 +254,33 @@ class TestAnalyzeDocumentUseCase:
 ```python
 # tests/integration/test_document_analysis.py
 import pytest
-from langwatch import langwatch
+from langwatch_scenario import Scenario
 
 class TestDocumentAnalysisIntegration:
     def setup_method(self):
-        # Initialize Langwatch for testing
-        langwatch.api_key = os.getenv('LANGWATCH_API_KEY')
-        langwatch.environment = "test"
+        # Initialize LangWatch Scenario for testing
+        self.scenario = Scenario(
+            api_key=os.getenv('LANGWATCH_API_KEY'),
+            project_id="your-project-integration-tests",
+            environment="test"
+        )
     
-    def test_end_to_end_document_analysis(self):
-        # Test actual LLM calls with monitoring
-        pass
+    def test_end_to_end_data_processing(self):
+        # Test actual LLM calls with scenario monitoring
+        with self.scenario.test_case("integration_data_processing") as test:
+            test.input(
+                data_content="Sample data for processing",
+                processing_type="your_processing_type"
+            )
+            
+            # Test actual implementation with scenario tracing
+            result = self.data_processor.process(
+                test.input.data_content,
+                test.input.processing_type
+            )
+            
+            test.expect(result).to_have_expected_structure()
+            test.expect(result).to_meet_business_requirements()
 ```
 
 ### Progress Tracking:
@@ -256,7 +293,7 @@ After implementation, update progress files:
   "last_updated": "2024-07-11T10:30:00Z",
   "next_steps": ["Deploy to staging", "Performance testing"],
   "tests_passing": true,
-  "llm_calls_monitored": true
+  "scenario_testing_enabled": true
 }
 ```
 
@@ -271,8 +308,8 @@ claude-code feature-developer.md --feature=feature_001 --architecture=clean
 # Update existing implementation
 claude-code feature-developer.md --feature=feature_001 --update
 
-# Include LLM monitoring setup
-claude-code feature-developer.md --feature=feature_001 --llm-monitoring
+# Include LangWatch Scenario testing setup
+claude-code feature-developer.md --feature=feature_001 --scenario-testing
 ```
 
 ### Quality Checklist:
@@ -280,7 +317,7 @@ claude-code feature-developer.md --feature=feature_001 --llm-monitoring
 - [ ] All dependencies injected
 - [ ] Comprehensive error handling
 - [ ] LLM calls use litellm
-- [ ] Langwatch monitoring enabled
+- [ ] LangWatch Scenario testing enabled
 - [ ] Tests cover edge cases
 - [ ] Documentation updated
 - [ ] Progress tracking updated

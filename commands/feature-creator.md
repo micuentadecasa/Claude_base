@@ -55,7 +55,7 @@ Brief description of what this feature does.
 ### LLM Testing (if applicable)
 - [ ] Prompt validation
 - [ ] Response quality checks
-- [ ] Langwatch scenario setup
+- [ ] LangWatch Scenario setup
 
 ## Dataset Requirements
 Describe what test data is needed:
@@ -78,7 +78,7 @@ Describe what test data is needed:
 - [ ] All tests passing
 - [ ] Dataset created and validated
 - [ ] Documentation updated
-- [ ] LLM calls monitored via Langwatch (if applicable)
+- [ ] LLM calls monitored via LangWatch Scenario (if applicable)
 ```
 
 ### Process:
@@ -90,15 +90,15 @@ Describe what test data is needed:
 6. **Track Progress**: Initialize progress tracking
 
 ### Environment Setup:
-- Ensure `.env` file exists with `GEMINI_API_KEY`
-- Use litellm for all LLM interactions
-- Configure Langwatch for LLM monitoring
+- Ensure `.env` file exists with required API keys for your project
+- Use litellm for LLM interactions if needed
+- Configure LangWatch Scenario for LLM monitoring if applicable
 
 ### Special Considerations:
-- **Document Analysis Features**: Include PDF/DOC processing requirements
-- **LLM Integration**: Specify prompt engineering needs
-- **Validation Logic**: Define document validation criteria
-- **Error Handling**: Plan for various document formats and edge cases
+- **Domain-Specific Features**: Include requirements specific to your project domain
+- **LLM Integration**: Specify prompt engineering needs if applicable
+- **Validation Logic**: Define validation criteria relevant to your domain
+- **Error Handling**: Plan for various input formats and edge cases
 
 ### Example Commands:
 ```bash
@@ -106,7 +106,7 @@ Describe what test data is needed:
 claude-code feature-creator.md
 
 # Create specific feature type
-claude-code feature-creator.md --type=document-analysis
+claude-code feature-creator.md --type=data-processing
 
 # Update existing features
 claude-code feature-creator.md --update
