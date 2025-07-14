@@ -48,6 +48,148 @@ tests/
     │   └── scenario_tests.py
 ```
 
+## 🧪 Conversational Agent Testing Requirements
+
+**CRITICAL**: For features with conversational chat interfaces, implement these mandatory test patterns to prevent conversation memory failures:
+
+### Required Environment Variables
+```bash
+# Add to .env file for testing
+GEMINI_API_KEY=your_gemini_api_key_here
+LANGSMITH_API_KEY=your_langsmith_key_here  # Optional for tracing
+OPENAI_API_KEY=your_openai_key_here        # Required for LangWatch user simulation
+```
+
+### Conversation Memory Testing Patterns
+```python
+@pytest.mark.conversation_memory
+def test_multi_turn_information_accumulation():
+    """Test agent accumulates information across multiple messages"""
+    messages = [
+        {"role": "user", "content": "We have a plan"},
+        {"role": "assistant", "content": "Tell me more about the plan details"},
+        {"role": "user", "content": "RTO is 2 hours"},
+        {"role": "assistant", "content": "Good, what about testing frequency?"},
+        {"role": "user", "content": "We test annually"}
+    ]
+    
+    state = {"messages": messages}
+    result = agent_function(state, config)
+    
+    # Agent should recognize complete answer from multiple turns
+    assert "2 hours" in result.get("accumulated_info", "")
+    assert "annually" in result.get("accumulated_info", "")
+
+@pytest.mark.conversation_memory  
+def test_no_repetitive_questions():
+    """Test agent doesn't ask for already provided information"""
+    messages = [
+        {"role": "user", "content": "We use authentication system X"},
+        {"role": "assistant", "content": "Great! Any additional security measures?"},
+        {"role": "user", "content": "Yes, we have MFA enabled"}
+    ]
+    
+    state = {"messages": messages}
+    result = agent_function(state, config)
+    
+    # Agent should NOT ask about authentication again
+    response = result["messages"][-1]["content"].lower()
+    assert "authentication" not in response
+
+@pytest.mark.conversation_memory
+def test_real_world_conversation_flow():
+    """Test agent with actual conversation patterns that previously failed"""
+    messages = [
+        {"role": "assistant", "content": "How can I help you today?"},
+        {"role": "user", "content": "We have users and passwords"},
+        {"role": "assistant", "content": "Tell me more about authentication"},
+        {"role": "user", "content": "We use Entra ID for authentication"},
+        {"role": "assistant", "content": "Do you have MFA configured?"},
+        {"role": "user", "content": "Yes, MFA is enabled for all critical systems"},
+        {"role": "assistant", "content": "What privilege management policies do you have?"},
+        {"role": "user", "content": "Privileges are reviewed quarterly"},
+        # User asks about different topic - should NOT repeat previous questions
+        {"role": "user", "content": "What content is usually included in security training?"}
+    ]
+    
+    state = {"messages": messages}
+    result = agent_function(state, config)
+    
+    # CRITICAL: Agent should NOT ask about authentication details again
+    response = result["messages"][-1]["content"].lower()
+    assert "entra id" not in response, "Agent should not ask about Entra ID again"
+    assert "mfa" not in response, "Agent should not ask about MFA again"
+    assert "authentication" not in response, "Agent should not ask about authentication again"
+    
+    # Should respond appropriately to the training content question
+    assert any(keyword in response for keyword in ["content", "training", "security"]), \
+        "Agent should address the training content question"
+```
+
+### LangWatch Scenario Testing Integration
+```bash
+# Install LangWatch Scenario for sophisticated agent testing
+pip install langwatch-scenario pytest
+
+# Configure scenario testing
+python -c "
+import scenario
+scenario.configure(
+    default_model='openai/gpt-4o-mini',  # For user simulation
+    cache_key='your-domain-tests',
+    verbose=True
+)
+"
+```
+
+### LangWatch Scenario Test Example
+```python
+import scenario
+from your_agent import YourAgentAdapter
+
+@pytest.mark.agent_test
+@pytest.mark.asyncio
+async def test_domain_expertise_scenario():
+    """Test agent demonstrates domain expertise in realistic conversation"""
+    
+    result = await scenario.run(
+        name="domain_expertise_validation",
+        description="""
+            Test that agent demonstrates expert knowledge in your domain.
+            User provides incomplete information and agent should identify gaps
+            and ask for specific missing details according to domain standards.
+        """,
+        agents=[
+            YourAgentAdapter(),
+            scenario.UserSimulatorAgent(),
+            scenario.JudgeAgent(
+                criteria=[
+                    "Agent should communicate in appropriate language",
+                    "Agent should demonstrate domain expertise",
+                    "Agent should identify incomplete information",
+                    "Agent should request specific missing details",
+                    "Agent should maintain professional tone"
+                ]
+            ),
+        ],
+        max_turns=8,
+        set_id="your-domain-tests",
+    )
+    
+    assert result.success, f"Domain expertise test failed: {result.failure_reason}"
+```
+
+### Critical Testing Checklist for Conversational Agents
+- [ ] **Full Context Processing**: Agent processes conversation history, not just latest message
+- [ ] **Information Accumulation**: Combines partial answers across multiple turns  
+- [ ] **No Repetitive Questions**: Doesn't ask for already provided information
+- [ ] **Correct Association**: Saves information to appropriate topics/entities
+- [ ] **Context Instructions**: Explicit prompt instructions for conversation memory
+- [ ] **Memory Tests**: Comprehensive test coverage for conversation scenarios
+- [ ] **Real-World Testing**: Tests with exact user conversation patterns
+- [ ] **Server Validation**: Always test actual LangGraph server execution, not just mocks
+- [ ] **LangWatch Integration**: Use scenario testing for realistic user simulation
+
 ### Test Execution Framework:
 
 #### Unit Testing Implementation:
@@ -197,78 +339,113 @@ class TestDataProcessingFlow:
 ```python
 # tests/llm_validation/test_feature_001/test_prompt_quality.py
 import pytest
-from langwatch_scenario import Scenario
+import scenario
 from src.shared.llm.litellm_client import LiteLLMClient
 
 class TestDomainSpecificScenarios:
     def setup_method(self):
-        # Initialize LangWatch Scenario library
-        self.scenario = Scenario(
-            api_key=os.getenv('LANGWATCH_API_KEY'),
-            project_id="your-domain-validation"
+        # Configure LangWatch Scenario library
+        scenario.configure(
+            default_model="openai/gpt-4",
+            api_key=os.getenv('LANGWATCH_API_KEY')
         )
         self.llm_client = LiteLLMClient()
     
-    def test_domain_validation_scenario(self):
+    @pytest.mark.agent_test
+    @pytest.mark.asyncio
+    async def test_domain_validation_scenario(self):
         """Test domain-specific validation using scenario library"""
-        # Define scenario for domain validation
-        validation_scenario = self.scenario.create_scenario(
-            name="domain_specific_validation",
-            description="Validate data against domain-specific standards",
-            tags=["domain", "validation", "quality"]
+        
+        class DomainValidationAgent(scenario.AgentAdapter):
+            async def call(self, input: scenario.AgentInput) -> scenario.AgentReturnTypes:
+                return domain_validation_agent(input.messages)
+        
+        result = await scenario.run(
+            name="domain specific validation",
+            description="""
+                User provides domain-specific data that needs validation
+                against business rules and quality standards.
+            """,
+            agents=[
+                DomainValidationAgent(),
+                scenario.UserSimulatorAgent(),
+                scenario.JudgeAgent(criteria=[
+                    "Agent should identify missing required fields",
+                    "Agent should provide specific improvement recommendations", 
+                    "Agent should maintain domain terminology consistency",
+                    "Agent should not flag valid data as problematic",
+                    "Response should be structured and actionable",
+                ])
+            ],
         )
         
-        # Test case: Incomplete data validation
-        with validation_scenario.test_case("incomplete_data_validation") as test:
-            test.input(
-                data_content="Sample incomplete data for validation",
-                validation_type="quality_check"
-            )
-            
-            response = self.llm_client.analyze_domain_compliance(
-                test.input.data_content,
-                test.input.validation_type
-            )
-            
-            # Validate response using scenario expectations
-            test.expect(response).to_identify_missing_elements([
-                "required_field_1",
-                "required_field_2",
-                "validation_criteria_3"
-            ])
-            
-            test.expect(response).to_provide_improvement_recommendations([
-                "Add missing required fields",
-                "Improve data structure",
-                "Implement validation rules"
-            ])
+        assert result.success
+
+@scenario.cache()
+def domain_validation_agent(messages) -> scenario.AgentReturnTypes:
+    response = litellm.completion(
+        model="openai/gpt-4",
+        messages=[
+            {
+                "role": "system",
+                "content": """
+                    You are a domain validation agent.
+                    Analyze data for compliance with business rules and quality standards.
+                    Provide specific, actionable recommendations.
+                """,
+            },
+            *messages,
+        ],
+    )
+    return response.choices[0].message
     
-    def test_business_rule_scenario(self):
+    @pytest.mark.agent_test
+    @pytest.mark.asyncio
+    async def test_business_rule_scenario(self):
         """Test business rule validation using scenario library"""
-        business_scenario = self.scenario.create_scenario(
-            name="business_rule_validation",
-            description="Validate data against business rules and requirements",
-            tags=["business_rules", "validation", "compliance"]
+        
+        class BusinessRuleAgent(scenario.AgentAdapter):
+            async def call(self, input: scenario.AgentInput) -> scenario.AgentReturnTypes:
+                return business_rule_agent(input.messages)
+        
+        result = await scenario.run(
+            name="business rule validation",
+            description="""
+                User submits business data that needs validation against
+                specific business rules and compliance requirements.
+            """,
+            agents=[
+                BusinessRuleAgent(),
+                scenario.UserSimulatorAgent(),
+                scenario.JudgeAgent(criteria=[
+                    "Agent should validate all applicable business rules",
+                    "Agent should cite specific rule violations",
+                    "Agent should provide compliant alternatives",
+                    "Agent should handle edge cases gracefully",
+                    "Response should be audit-ready",
+                ])
+            ],
         )
         
-        with business_scenario.test_case("rule_compliance_check") as test:
-            test.input(
-                data_content="Sample data for business rule validation",
-                validation_type="business_rules"
-            )
-            
-            response = self.llm_client.analyze_domain_compliance(
-                test.input.data_content,
-                test.input.validation_type
-            )
-            
-            test.expect(response).to_identify_rule_violations([
-                "rule_violation_1",
-                "rule_violation_2",
-                "missing_requirement_3"
-            ])
-            
-            test.expect(response).to_have_compliance_score().greater_than(70)
+        assert result.success
+
+@scenario.cache()
+def business_rule_agent(messages) -> scenario.AgentReturnTypes:
+    response = litellm.completion(
+        model="openai/gpt-4", 
+        messages=[
+            {
+                "role": "system",
+                "content": """
+                    You are a business rule compliance agent.
+                    Validate data against business rules and regulatory requirements.
+                    Provide detailed compliance reports with specific citations.
+                """,
+            },
+            *messages,
+        ],
+    )
+    return response.choices[0].message
     
     def test_monitoring_compliance_scenario(self):
         """Test NES monitoring requirements using scenario library"""
@@ -400,35 +577,72 @@ scenario_config = ScenarioConfig(
     export_results=True,
     result_format="json"
 )
+
+# Environment setup for running scenarios
+# Required environment variables:
+# export OPENAI_API_KEY=<your-openai-api-key>
+# export LANGWATCH_API_KEY=<your-langwatch-api-key>  # optional
+
+# Install dependencies:
+# pip install langwatch-scenario pytest
+# or
+# uv add langwatch-scenario pytest
 ```
 
-#### Dataset Integration with Scenarios:
+#### Running LangWatch Scenario Tests:
+```bash
+# Run all agent scenario tests
+pytest -s -m agent_test
+
+# Run specific scenario test
+pytest -s test_domain_validation_scenarios.py::test_domain_validation_scenario
+
+# Run with verbose output and reporting
+pytest -v -s -m agent_test --langwatch-report
+```
+
+#### Example Test Execution:
 ```python
 # tests/llm_validation/test_feature_002/scenario_tests.py
+import pytest
+import scenario
 import json
-from langwatch_scenario import Scenario, load_scenario_dataset
 
-class TestNESScenarioDatasets:
-    def setup_method(self):
-        # Load scenario datasets
-        self.scenario_data = load_scenario_dataset("datasets/feature_002/nes_scenarios.json")
-        self.scenario = Scenario(api_key=os.getenv('LANGWATCH_API_KEY'))
+@pytest.mark.agent_test
+@pytest.mark.asyncio
+async def test_domain_scenarios_from_dataset():
+    """Run domain-specific scenarios from dataset"""
     
-    def test_all_nes_compliance_scenarios(self):
-        """Run all NES compliance scenarios from dataset"""
-        for scenario_data in self.scenario_data["nes_compliance_scenarios"]:
-            with self.scenario.test_case(scenario_data["scenario_id"]) as test:
-                test.input(**scenario_data["input"])
-                
-                response = self.llm_client.analyze_nes_compliance(
-                    test.input.document_content,
-                    test.input.validation_type
-                )
-                
-                # Apply scenario-specific expectations
-                expected = scenario_data["expected_analysis"]
-                test.expect(response).to_match_expected_structure(expected)
-                test.expect(response).to_meet_quality_criteria(
-                    scenario_data["quality_criteria"]
-                )
+    # Load scenario datasets
+    with open("datasets/feature_002/domain_scenarios.json") as f:
+        scenario_data = json.load(f)
+    
+    class DomainAgent(scenario.AgentAdapter):
+        async def call(self, input: scenario.AgentInput) -> scenario.AgentReturnTypes:
+            return domain_agent(input.messages)
+    
+    for test_scenario in scenario_data["domain_validation_scenarios"]:
+        result = await scenario.run(
+            name=test_scenario["name"],
+            description=test_scenario["description"],
+            agents=[
+                DomainAgent(),
+                scenario.UserSimulatorAgent(),
+                scenario.JudgeAgent(criteria=test_scenario["success_criteria"])
+            ],
+        )
+        
+        assert result.success
+
+@scenario.cache()
+def domain_agent(messages) -> scenario.AgentReturnTypes:
+    import litellm
+    response = litellm.completion(
+        model="openai/gpt-4",
+        messages=[
+            {"role": "system", "content": "You are a domain validation expert."},
+            *messages,
+        ],
+    )
+    return response.choices[0].message
 ```

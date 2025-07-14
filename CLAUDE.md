@@ -7,38 +7,47 @@ This is a template repository for building domain-specific applications using Cl
 
 ## Command-Based Development Workflow
 
-### Core Development Commands
+### Core Development Commands (in execution order)
 ```bash
-# Create feature specifications from PRD
-claude-code commands/feature-creator.md
+# c00: Enhance pre-PRD into comprehensive PRD
+claude-code commands/c00-prd-enhancer.md
 
-# Generate test datasets for specific features
-claude-code commands/dataset-generator.md --feature=feature_001
+# c01: Initial environment setup
+claude-code commands/c01-environment-setup.md
 
-# Implement features with SOLID architecture
-claude-code commands/feature-developer.md --feature=feature_001
+# c02: Create feature specifications from PRD
+claude-code commands/c02-feature-creator.md
 
-# Execute comprehensive testing with LLM monitoring
-claude-code commands/feature-tester.md --feature=feature_001
+# c03: Generate test datasets for specific features
+claude-code commands/c03-dataset-generator.md --feature=feature_001
 
-# Track progress across all features
-claude-code commands/progress-tracker.md
+# c04: Implement features with SOLID architecture
+claude-code commands/c04-feature-developer.md --feature=feature_001
 
-# Manage conversation context efficiently
-claude-code commands/context-manager.md --feature=feature_001
+# c05: Execute comprehensive testing with LLM monitoring
+claude-code commands/c05-feature-tester.md --feature=feature_001
+```
+
+### Utility Commands (used internally by other commands)
+```bash
+# c08: Manage conversation context efficiently (high-level utility)
+claude-code commands/c08-context-manager.md --feature=feature_001
+
+# c09: Track progress across all features (high-level utility)
+claude-code commands/c09-progress-tracker.md
 ```
 
 ### Feature-Specific Development
 ```bash
 # Work on specific feature types (customize for your domain)
-claude-code commands/feature-developer.md --feature=feature_001 --type=data-processing
-claude-code commands/feature-developer.md --feature=feature_002 --type=business-validation
-claude-code commands/feature-developer.md --feature=feature_003 --type=user-interface
+claude-code commands/c04-feature-developer.md --feature=feature_001 --type=data-processing
+claude-code commands/c04-feature-developer.md --feature=feature_002 --type=business-validation
+claude-code commands/c04-feature-developer.md --feature=feature_003 --type=user-interface
 
 # Run targeted test suites
-claude-code commands/feature-tester.md --feature=feature_001 --suite=unit
-claude-code commands/feature-tester.md --feature=feature_002 --suite=integration
-claude-code commands/feature-tester.md --feature=feature_003 --suite=e2e
+claude-code commands/c05-feature-tester.md --feature=feature_001 --suite=unit
+claude-code commands/c05-feature-tester.md --feature=feature_002 --suite=integration
+claude-code commands/c05-feature-tester.md --feature=feature_003 --suite=e2e
 ```
 
 ## Architecture Overview
@@ -73,10 +82,11 @@ src/
 ```
 
 ### LLM Integration Standards
-- **LiteLLM**: All LLM calls use LiteLLM with Google Gemini API
-- **LangWatch**: Comprehensive monitoring for all LLM interactions
+- **LiteLLM**: All LLM calls use LiteLLM with configurable LLM providers
+- **LangWatch Scenario**: Comprehensive testing and monitoring for LLM interactions
 - **Environment Variables**: API keys stored in `.env` file
 - **Error Handling**: Graceful fallbacks for LLM service failures
+- **Testing**: Agent-based scenario testing with automatic simulation
 
 ### Data Processing Architecture
 - **Data Ingestion**: Configurable processors for various data formats (JSON, CSV, XML, etc.)
@@ -156,8 +166,16 @@ LANGWATCH_API_KEY=your_langwatch_api_key
 - Python 3.8+
 - Domain-specific processing libraries (adapt to your use case)
 - LiteLLM for LLM integration
-- LangWatch Scenario for monitoring and testing
+- LangWatch Scenario library for LLM testing and monitoring
 - pytest for testing framework
+
+### Installation Commands
+```bash
+# Install LangWatch Scenario library
+pip install langwatch-scenario pytest
+# or with uv
+uv add langwatch-scenario pytest
+```
 
 ## Project Structure
 

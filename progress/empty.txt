@@ -1,0 +1,2 @@
+# This file maintains the progress directory structure
+# Progress tracking will be generated here by c09-progress-tracker.md

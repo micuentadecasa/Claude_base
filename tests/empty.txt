@@ -1,0 +1,2 @@
+# This file maintains the tests directory structure
+# Test files will be generated here by c04-feature-tester.md

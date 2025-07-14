@@ -1,0 +1,2 @@
+# This file maintains the datasets directory structure
+# Test datasets will be generated here by c02-dataset-generator.md

@@ -36,6 +36,82 @@ context7 search "best practices SOLID architecture"
 - **Interface Segregation**: Many specific interfaces
 - **Dependency Inversion**: Depend on abstractions
 
+## 🤖 Conversational Chat Interface Implementation
+
+**CRITICAL**: If your feature includes conversational chat functionality, implement it using LangGraph agents following these patterns:
+
+### Required LangGraph Architecture
+```
+backend/                    # Working reference implementation (read-only)
+backend_gen/               # Generated agent workspace (use for testing)
+├── src/agent/
+│   ├── state.py          # OverallState TypedDict definition
+│   ├── graph.py          # Graph assembly with absolute imports
+│   ├── nodes/            # Individual agent node functions
+│   ├── tools_and_schemas.py  # Pydantic models and tools
+│   └── configuration.py  # LLM model configuration
+└── langgraph.json        # Deployment configuration
+```
+
+### Critical Development Commands
+```bash
+# ALWAYS use generated backend for testing
+make gen                  # Start frontend + generated backend
+cd backend_gen           # Work in generated agent workspace
+pip install -e .         # Install in editable mode
+langgraph dev            # Start LangGraph dev server (port 2024)
+```
+
+### Modern LLM-First Agent Design
+**Avoid over-engineering conversation management - let LLMs handle natural conversation:**
+
+```python
+# ✅ PREFERRED: Single comprehensive prompt with embedded expertise
+def agent_coordinator(state: OverallState, config: RunnableConfig) -> Dict[str, Any]:
+    configurable = Configuration.from_runnable_config(config)
+    llm = ChatGoogleGenerativeAI(
+        model=configurable.answer_model,  # Use configured model
+        temperature=0.1,
+        api_key=os.getenv("GEMINI_API_KEY"),
+    )
+    
+    # Extract conversation context properly
+    messages = state.get("messages", [])
+    conversation_context = []
+    for msg in messages:
+        if hasattr(msg, 'type') and msg.type == "human":
+            conversation_context.append(f"User: {msg.content}")
+        elif hasattr(msg, 'type') and msg.type == "ai":
+            conversation_context.append(f"Assistant: {msg.content}")
+    
+    # Single comprehensive prompt with domain expertise
+    prompt = f"""You are an expert assistant for [YOUR DOMAIN].
+
+CONVERSATION HISTORY:
+{chr(10).join(conversation_context[-10:])}
+
+DOMAIN EXPERTISE:
+[Include your domain-specific knowledge here]
+
+INSTRUCTIONS:
+1. ALWAYS respond in appropriate language and tone
+2. Use conversation history for complete context
+3. Don't repeat questions already answered
+4. Accumulate information across multiple turns
+
+LATEST MESSAGE: {messages[-1].content if messages else "Hello"}"""
+
+    response = llm.invoke(prompt)
+    return {"messages": state.get("messages", []) + [{"role": "assistant", "content": response.content}]}
+```
+
+### Key Architectural Principles for Conversational Agents
+1. **Use Tools for Operations**: File I/O, API calls, data persistence
+2. **Use LLM for Logic**: Domain expertise, conversation management, intent understanding
+3. **Absolute Imports**: Always use `from agent.nodes.x import y` in graph.py
+4. **Configuration-Based Models**: Use `Configuration.from_runnable_config(config)`
+5. **Proper Message Handling**: Handle both dict and LangChain message objects
+
 #### Step 3: Implementation Structure
 ```
 src/
@@ -85,33 +161,30 @@ API_KEY = os.getenv('YOUR_LLM_API_KEY')  # Replace with your actual API key name
 #### LiteLLM Implementation:
 ```python
 from litellm import completion
-from langwatch_scenario import Scenario
+import scenario
 
 class LLMService:
     def __init__(self):
         self.model = "your-preferred-model"  # e.g., "gpt-4", "gemini/gemini-pro", etc.
-        self.scenario = Scenario(
-            api_key=os.getenv('LANGWATCH_API_KEY'),
-            project_id="your-project-name"
+        # Configure scenario library
+        scenario.configure(
+            default_model=self.model,
+            api_key=os.getenv('LANGWATCH_API_KEY')
         )
     
+    @scenario.cache()
     def analyze_content(self, content: str, analysis_type: str) -> dict:
-        # Use scenario testing for LLM calls
-        with self.scenario.trace_call("content_analysis") as trace:
-            trace.input(content=content, analysis_type=analysis_type)
-            
-            response = completion(
-                model=self.model,
-                messages=[
-                    {"role": "system", "content": "You are an intelligent assistant..."},
-                    {"role": "user", "content": f"Analyze: {content}"}
-                ],
-                api_key=os.getenv('YOUR_LLM_API_KEY')
-            )
-            
-            result = response.choices[0].message.content
-            trace.output(result=result)
-            return result
+        # Use scenario caching for LLM calls
+        response = completion(
+            model=self.model,
+            messages=[
+                {"role": "system", "content": "You are an intelligent assistant..."},
+                {"role": "user", "content": f"Analyze: {content}"}
+            ],
+            api_key=os.getenv('YOUR_LLM_API_KEY')
+        )
+        
+        return response.choices[0].message.content
 ```
 
 ### Generic Feature Implementation Example:
@@ -197,24 +270,21 @@ class LiteLLMClient:
     def __init__(self):
         self.model = "your-preferred-model"  # Configure for your LLM provider
         self.api_key = os.getenv('YOUR_LLM_API_KEY')
-        self.scenario = Scenario(
-            api_key=os.getenv('LANGWATCH_API_KEY'),
-            project_id="your-project-name"
+        # Configure scenario library
+        scenario.configure(
+            default_model=self.model,
+            api_key=os.getenv('LANGWATCH_API_KEY')
         )
     
+    @scenario.cache()
     def complete(self, messages: List[Dict]) -> str:
-        with self.scenario.trace_call("llm_completion") as trace:
-            trace.input(messages=messages, model=self.model)
-            
-            response = completion(
-                model=self.model,
-                messages=messages,
-                api_key=self.api_key
-            )
-            
-            result = response.choices[0].message.content
-            trace.output(result=result)
-            return result
+        response = completion(
+            model=self.model,
+            messages=messages,
+            api_key=self.api_key
+        )
+        
+        return response.choices[0].message.content
 ```
 
 ### Testing Implementation:
@@ -254,33 +324,58 @@ class TestAnalyzeDocumentUseCase:
 ```python
 # tests/integration/test_document_analysis.py
 import pytest
-from langwatch_scenario import Scenario
+import scenario
 
 class TestDocumentAnalysisIntegration:
     def setup_method(self):
-        # Initialize LangWatch Scenario for testing
-        self.scenario = Scenario(
-            api_key=os.getenv('LANGWATCH_API_KEY'),
-            project_id="your-project-integration-tests",
-            environment="test"
+        # Configure LangWatch Scenario for testing
+        scenario.configure(
+            default_model="openai/gpt-4",
+            api_key=os.getenv('LANGWATCH_API_KEY')
         )
     
-    def test_end_to_end_data_processing(self):
+    @pytest.mark.agent_test
+    @pytest.mark.asyncio
+    async def test_end_to_end_data_processing(self):
         # Test actual LLM calls with scenario monitoring
-        with self.scenario.test_case("integration_data_processing") as test:
-            test.input(
-                data_content="Sample data for processing",
-                processing_type="your_processing_type"
-            )
-            
-            # Test actual implementation with scenario tracing
-            result = self.data_processor.process(
-                test.input.data_content,
-                test.input.processing_type
-            )
-            
-            test.expect(result).to_have_expected_structure()
-            test.expect(result).to_meet_business_requirements()
+        
+        class DataProcessingAgent(scenario.AgentAdapter):
+            async def call(self, input: scenario.AgentInput) -> scenario.AgentReturnTypes:
+                return data_processing_agent(input.messages)
+        
+        result = await scenario.run(
+            name="integration data processing",
+            description="""
+                Test complete data processing workflow with
+                business logic validation and quality checks.
+            """,
+            agents=[
+                DataProcessingAgent(),
+                scenario.UserSimulatorAgent(),
+                scenario.JudgeAgent(criteria=[
+                    "Agent should process data according to business rules",
+                    "Agent should validate data quality",
+                    "Agent should provide structured output",
+                    "Agent should handle edge cases gracefully",
+                ])
+            ],
+        )
+        
+        assert result.success
+
+@scenario.cache()
+def data_processing_agent(messages) -> scenario.AgentReturnTypes:
+    response = completion(
+        model="openai/gpt-4",
+        messages=[
+            {
+                "role": "system", 
+                "content": "You are a data processing agent that validates and processes business data."
+            },
+            *messages,
+        ],
+    )
+    return response.choices[0].message
 ```
 
 ### Progress Tracking:

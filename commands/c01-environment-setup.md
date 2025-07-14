@@ -27,11 +27,15 @@ project_name/
 ├── Makefile               # Build and run automation
 ├── requirements.txt       # Python dependencies
 ├── pyproject.toml        # Python project configuration
-├── backend/              # Python backend
+├── backend/              # Python backend (reference implementation)
 │   ├── venv/            # Virtual environment
 │   ├── src/             # Source code
 │   ├── tests/           # Test files
 │   └── logs/            # Application logs
+├── backend_gen/          # Generated agent workspace (for testing)
+│   ├── src/agent/       # LangGraph agent implementation
+│   ├── tests/           # Agent test files
+│   └── langgraph.json   # LangGraph configuration
 ├── frontend/            # React frontend (if needed)
 │   ├── package.json     # Node dependencies
 │   ├── src/             # React source
@@ -44,6 +48,75 @@ project_name/
 ```
 
 ## Environment Setup Process:
+
+## 🤖 Conversational Chat Interface Environment Setup
+
+**CRITICAL**: If your project includes conversational chat functionality, configure additional LangGraph environment:
+
+### Required Environment Variables for Chat Interfaces
+```bash
+# Create .env file with required API keys
+cat > .env << 'EOF'
+# LLM APIs
+GEMINI_API_KEY=your_gemini_api_key_here
+LANGSMITH_API_KEY=your_langsmith_key_here  # Optional for tracing
+OPENAI_API_KEY=your_openai_key_here        # Required for LangWatch user simulation
+
+# LangWatch (for scenario testing)
+LANGWATCH_API_KEY=your_langwatch_api_key_here
+EOF
+```
+
+### LangGraph Development Commands Setup
+```bash
+# Add to Makefile for conversational agents
+cat >> Makefile << 'EOF'
+
+# LangGraph Development Commands
+.PHONY: gen dev-backend-gen install-gen test-gen
+
+# Start frontend + generated backend (USE FOR TESTING)
+gen:
+	@echo "🚀 Starting frontend and generated backend..."
+	make install-gen
+	cd backend_gen && langgraph dev &
+	cd frontend && npm run dev
+
+# Generated backend only
+dev-backend-gen:
+	@echo "🤖 Starting generated LangGraph backend..."
+	cd backend_gen && pip install -e . && langgraph dev
+
+# Install generated backend dependencies
+install-gen:
+	@echo "📦 Installing generated backend dependencies..."
+	cd backend_gen && pip install -e .
+
+# Test generated agents
+test-gen:
+	@echo "🧪 Testing generated agents..."
+	cd backend_gen && python -m pytest tests/ -v
+EOF
+```
+
+### LangGraph Agent Dependencies
+```bash
+# Add to requirements.txt for conversational interfaces
+cat >> requirements.txt << 'EOF'
+
+# LangGraph and Agent Dependencies
+langgraph>=0.2.0
+langchain-google-genai>=2.0.0
+langchain-core>=0.3.0
+langsmith>=0.1.0
+
+# Testing and Scenario Libraries
+langwatch-scenario>=0.7.0
+pytest>=8.0.0
+pytest-asyncio>=0.21.0
+pytest-mock>=3.10.0
+EOF
+```
 
 ### Step 1: Python Environment Setup
 ```bash

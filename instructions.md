@@ -1,3 +1,20 @@
+## 📋 Command Execution Order
+
+The commands are numbered in execution order for easy reference:
+
+### Core Development Commands (Execute in Order)
+- **c00-environment-setup.md** - Initial project and environment setup
+- **c01-feature-creator.md** - Create feature specifications from PRD  
+- **c02-dataset-generator.md** - Generate test datasets and LangWatch scenarios
+- **c03-feature-developer.md** - Implement features with Clean Architecture
+- **c04-feature-tester.md** - Execute comprehensive testing with LLM monitoring
+
+### Utility Commands (Used Internally - High Numbers)
+- **c08-context-manager.md** - Conversation context optimization (you won't use directly)
+- **c09-progress-tracker.md** - Development state management (you won't use directly)
+
+The utility commands (c08, c09) are called automatically by the main commands to maintain context and track progress.
+
 ## 🔧 Step-by-Step Implementation
 
 ### Prerequisites
@@ -12,7 +29,7 @@ claude-code --version
 ### Step 1: Create Features from PRD
 ```bash
 # Generate feature breakdown from PRD
-claude-code commands/feature-creator.md
+claude-code commands/c01-feature-creator.md
 
 # This analyzes your prd.md and creates:
 # - features/feature_XXX.md files for each identified feature
@@ -34,13 +51,13 @@ claude-code commands/feature-creator.md
 ### Step 2: Generate Test Datasets
 ```bash
 # Create comprehensive test datasets for each feature
-claude-code commands/dataset-generator.md --feature=feature_001
+claude-code commands/c02-dataset-generator.md --feature=feature_001
 
 # Create domain-specific validation scenarios
-claude-code commands/dataset-generator.md --feature=feature_002 --type=validation
+claude-code commands/c02-dataset-generator.md --feature=feature_002 --type=validation
 
 # Create user interaction test data
-claude-code commands/dataset-generator.md --feature=feature_003 --type=interaction
+claude-code commands/c02-dataset-generator.md --feature=feature_003 --type=interaction
 ```
 
 **Expected Output:**
@@ -65,13 +82,13 @@ claude-code commands/dataset-generator.md --feature=feature_003 --type=interacti
 ### Step 3: Implement Core Features
 ```bash
 # Start with foundational feature (usually data processing)
-claude-code commands/feature-developer.md --feature=feature_001
+claude-code commands/c03-feature-developer.md --feature=feature_001
 
 # Then implement business logic feature
-claude-code commands/feature-developer.md --feature=feature_002
+claude-code commands/c03-feature-developer.md --feature=feature_002
 
 # Finally implement user interface/interaction feature
-claude-code commands/feature-developer.md --feature=feature_003
+claude-code commands/c03-feature-developer.md --feature=feature_003
 ```
 
 **Implementation follows Clean Architecture pattern for each feature:**
@@ -117,22 +134,22 @@ src/
 ### Step 4: Run Comprehensive Testing
 ```bash
 # Test foundational feature with complete test suite
-claude-code commands/feature-tester.md --feature=feature_001 --suite=all
+claude-code commands/c04-feature-tester.md --feature=feature_001 --suite=all
 
 # Validate business logic with domain-specific scenarios
-claude-code commands/feature-tester.md --feature=feature_002 --scenario-testing
+claude-code commands/c04-feature-tester.md --feature=feature_002 --scenario-testing
 
 # Test user interaction and state management
-claude-code commands/feature-tester.md --feature=feature_003 --integration-tests
+claude-code commands/c04-feature-tester.md --feature=feature_003 --integration-tests
 ```
 
 ### Step 5: Track Progress and Manage Context
 ```bash
-# Check overall project status
-claude-code commands/progress-tracker.md --global-status
+# Check overall project status (utility command - used by other commands)
+claude-code commands/c09-progress-tracker.md --global-status
 
-# Generate context summary for efficient Claude conversations
-claude-code commands/context-manager.md --feature=feature_001 --new-session
+# Generate context summary for efficient Claude conversations (utility command)
+claude-code commands/c08-context-manager.md --feature=feature_001 --new-session
 ```
 
 ## 💡 Advanced Usage Patterns
@@ -140,28 +157,28 @@ claude-code commands/context-manager.md --feature=feature_001 --new-session
 ### Working with Multiple Features
 ```bash
 # Switch context between features efficiently
-claude-code commands/context-manager.md --switch-from=feature_001 --switch-to=feature_002
+claude-code commands/c08-context-manager.md --switch-from=feature_001 --switch-to=feature_002
 
 # Check cross-feature dependencies
-claude-code commands/progress-tracker.md --dependencies
+claude-code commands/c09-progress-tracker.md --dependencies
 ```
 
 ### Debugging and Problem Resolution
 ```bash
 # Start debugging session with focused context
-claude-code commands/context-manager.md --feature=feature_002 --session-type=debugging
+claude-code commands/c08-context-manager.md --feature=feature_002 --session-type=debugging
 
 # Check for blockers and get resolution suggestions
-claude-code commands/progress-tracker.md --feature=feature_002 --blockers
+claude-code commands/c09-progress-tracker.md --feature=feature_002 --blockers
 ```
 
 ### Performance Optimization
 ```bash
 # Run performance tests with realistic loads
-claude-code commands/feature-tester.md --feature=feature_001 --suite=performance
+claude-code commands/c04-feature-tester.md --feature=feature_001 --suite=performance
 
 # Generate performance optimization recommendations
-claude-code commands/feature-developer.md --feature=feature_001 --optimize
+claude-code commands/c03-feature-developer.md --feature=feature_001 --optimize
 ```
 
 ## 🧪 LangWatch Scenario Testing Example
@@ -207,7 +224,7 @@ The system provides continuous feedback:
 
 ```bash
 # Get real-time status
-claude-code commands/progress-tracker.md --feature=feature_001
+claude-code commands/c09-progress-tracker.md --feature=feature_001
 
 # Output:
 Feature 001: [Your Feature Name]
@@ -231,7 +248,7 @@ Smart context loading prevents conversation bloat:
 
 ```bash
 # Start optimized session
-claude-code commands/context-manager.md --feature=feature_002 --new-session
+claude-code commands/c08-context-manager.md --feature=feature_002 --new-session
 
 # Output includes only relevant context:
 # - Current implementation state
@@ -256,19 +273,19 @@ claude-code --version
 ### Command Execution
 ```bash
 # Commands can be run directly
-claude-code commands/feature-creator.md
+claude-code commands/c01-feature-creator.md
 
 # Or with specific parameters
-claude-code commands/feature-developer.md --feature=feature_001 --validate-standards
+claude-code commands/c03-feature-developer.md --feature=feature_001 --validate-standards
 
 # Or as part of a workflow
-claude-code commands/feature-tester.md --feature=feature_001 --generate-report
+claude-code commands/c04-feature-tester.md --feature=feature_001 --generate-report
 ```
 
 ### Integration with Research Tools
 ```bash
 # Commands automatically suggest research commands
-claude-code commands/feature-developer.md --feature=feature_001
+claude-code commands/c03-feature-developer.md --feature=feature_001
 
 # Auto-generates research suggestions like:
 # "Search for [your-library] latest documentation and best practices"
@@ -281,7 +298,7 @@ claude-code commands/feature-developer.md --feature=feature_001
 ### Issue: External Service Integration Failing
 ```bash
 # Check environment setup
-claude-code commands/progress-tracker.md --feature=feature_001 --validate-env
+claude-code commands/c09-progress-tracker.md --feature=feature_001 --validate-env
 
 # Verify .env file has required keys for your domain:
 # YOUR_API_KEY, SERVICE_API_KEY, etc.
@@ -290,19 +307,19 @@ claude-code commands/progress-tracker.md --feature=feature_001 --validate-env
 ### Issue: Tests Failing
 ```bash
 # Run diagnostic testing
-claude-code commands/feature-tester.md --feature=feature_001 --diagnose
+claude-code commands/c04-feature-tester.md --feature=feature_001 --diagnose
 
 # Check specific test categories
-claude-code commands/feature-tester.md --feature=feature_001 --suite=unit --verbose
+claude-code commands/c04-feature-tester.md --feature=feature_001 --suite=unit --verbose
 ```
 
 ### Issue: Memory/Context Problems
 ```bash
 # Compress current conversation context
-claude-code commands/context-manager.md --feature=feature_001 --compress
+claude-code commands/c08-context-manager.md --feature=feature_001 --compress
 
 # Switch to fresh session with essential context only
-claude-code commands/context-manager.md --feature=feature_001 --new-session
+claude-code commands/c08-context-manager.md --feature=feature_001 --new-session
 ```
 
 ## 📈 Success Metrics
@@ -326,3 +343,20 @@ To adapt this template for your specific domain:
 3. **Customize Commands**: Adapt command parameters for your technology stack
 4. **Domain Testing**: Create domain-specific test scenarios and validation rules
 5. **Technology Stack**: Replace example libraries with those relevant to your domain
+
+### Command Usage Pattern
+Always follow the numbered sequence for best results:
+```bash
+# 1. Start with environment setup (one time)
+claude-code commands/c00-environment-setup.md
+
+# 2. Create features from your PRD
+claude-code commands/c01-feature-creator.md
+
+# 3. For each feature, run in sequence:
+claude-code commands/c02-dataset-generator.md --feature=feature_001
+claude-code commands/c03-feature-developer.md --feature=feature_001  
+claude-code commands/c04-feature-tester.md --feature=feature_001
+```
+
+The utility commands (c08-context-manager, c09-progress-tracker) run automatically - you don't need to call them directly.
