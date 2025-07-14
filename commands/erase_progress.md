@@ -32,16 +32,26 @@ def standard_reset():
     """Clear project artifacts but keep source code and folder structure"""
     
     directories_to_clear = [
-        "datasets/",
-        "features/", 
-        "progress/",
-        "context/",
-        "tests/"
+        "src/datasets/",           # Clear generated datasets
+        "src/steps/",              # Clear generated implementation steps
+        "src/.agents/",            # Clear agent workspaces
+        "src/.planners/",          # Clear planner workspaces
+        "src/*/backend/logs/",     # Clear log files
+        "src/*/backend/venv/",     # Clear virtual environments
+        "src/*/backend/tests/",    # Clear generated tests
+        "src/*/frontend/dist/",    # Clear frontend build files
+        "src/*/frontend/node_modules/"  # Clear node modules
     ]
     
     files_to_remove = [
-        "prd.md",  # Keep as backup, but remove current one
-        ".env.example"  # Remove if created
+        "prd.md",                  # Keep as backup, but remove current one
+        "src/.progress.json",      # Clear progress tracking
+        "src/.parallel_matrix.json",  # Clear parallel execution matrix
+        "src/*/.env",              # Clear environment files in src projects
+        "src/*/requirements.txt",  # Clear generated requirements
+        "src/*/pyproject.toml",    # Clear generated project config
+        "src/*/Makefile",          # Clear generated Makefiles
+        "src/*/.gitignore"         # Clear generated gitignore files
     ]
     
     print("🧹 Starting standard project reset...")
@@ -57,15 +67,10 @@ def standard_reset():
                     shutil.rmtree(item)
                     print(f"🗑️  Removed directory: {item}")
             
-            # Add empty.txt to maintain structure
-            empty_file = Path(directory) / "empty.txt"
-            empty_file.write_text(f"# This file maintains the {directory} directory structure\n# Files will be generated here by the appropriate commands")
             print(f"✅ Cleared contents: {directory}")
         else:
             # Create directory if it doesn't exist
             os.makedirs(directory, exist_ok=True)
-            empty_file = Path(directory) / "empty.txt"
-            empty_file.write_text(f"# This file maintains the {directory} directory structure\n# Files will be generated here by the appropriate commands")
             print(f"✅ Created: {directory}")
     
     for file_path in files_to_remove:
@@ -248,14 +253,15 @@ def print_next_steps(full_reset_done: bool):
         print("\n📋 Next Steps for New Project:")
         print("1. Update CLAUDE.md with your domain-specific information")
         print("2. Create a new prd.md with your project requirements")
-        print("3. Set up .env file with your API keys")
-        print("4. Run: claude-code commands/c00-environment-setup.md")
-        print("5. Run: claude-code commands/c01-feature-creator.md")
+        print("3. Run: claude-code commands/env-setup.md")
+        print("4. Run: claude-code commands/feature-plan.md")
+        print("5. Run: claude-code commands/feature-implement.md")
     else:
         print("\n📋 Next Steps:")
         print("1. Update your prd.md with new requirements")
-        print("2. Run: claude-code commands/c01-feature-creator.md")
-        print("3. Continue with your development workflow")
+        print("2. Run: claude-code commands/feature-plan.md")
+        print("3. Run: claude-code commands/feature-implement.md")
+        print("4. Note: Source code structure in src/ has been preserved")
 
 if __name__ == "__main__":
     main()
@@ -267,22 +273,36 @@ if __name__ == "__main__":
 ```
 project/
 ├── commands/              # ✅ Preserved
-│   ├── c00-environment-setup.md
-│   ├── c01-feature-creator.md
-│   ├── c02-dataset-generator.md
-│   ├── c03-feature-developer.md
-│   ├── c04-feature-tester.md
+│   ├── prd-enhance.md
+│   ├── env-setup.md
+│   ├── feature-plan.md
+│   ├── feature-implement.md
 │   ├── c08-context-manager.md
 │   └── c09-progress-tracker.md
-├── src/                   # ✅ Preserved (your implemented code)
+├── src/                   # ✅ Preserved directory structure
+│   ├── .progress.json     # 🗑️ Progress tracking removed
+│   ├── .parallel_matrix.json # 🗑️ Parallel execution matrix removed
+│   ├── datasets/          # 🗑️ Generated datasets removed
+│   ├── steps/             # 🗑️ Implementation steps removed
+│   ├── .agents/           # 🗑️ Agent workspaces removed
+│   ├── .planners/         # 🗑️ Planner workspaces removed
+│   └── your-project/      # ✅ Preserved (but contents cleaned)
+│       ├── backend/
+│       │   ├── app/       # ✅ Code structure preserved
+│       │   ├── venv/      # 🗑️ Virtual environment removed
+│       │   ├── tests/     # 🗑️ Tests removed
+│       │   └── logs/      # 🗑️ Log files removed
+│       ├── frontend/
+│       │   ├── dist/      # 🗑️ Build files removed
+│       │   └── node_modules/ # 🗑️ Node modules removed
+│       ├── .env           # 🗑️ Environment file removed
+│       ├── requirements.txt # 🗑️ Requirements removed
+│       ├── pyproject.toml # 🗑️ Project config removed
+│       ├── Makefile       # 🗑️ Makefile removed
+│       └── .gitignore     # 🗑️ Gitignore removed
 ├── CLAUDE.md              # ✅ Preserved
 ├── instructions.md        # ✅ Preserved
-├── erase_progress.md      # ✅ Preserved
-├── datasets/              # 🗑️ Removed
-├── features/              # 🗑️ Removed  
-├── progress/              # 🗑️ Removed
-├── context/               # 🗑️ Removed
-└── tests/                 # 🗑️ Removed
+└── erase_progress.md      # ✅ Preserved
 ```
 
 #### Full Reset (--include-src used):

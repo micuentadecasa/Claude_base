@@ -5,50 +5,64 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Repository Purpose
 This is a template repository for building domain-specific applications using Claude Code. It provides a structured approach to feature development with comprehensive testing and LLM monitoring, adaptable to any domain or use case.
 
-## Command-Based Development Workflow
+## Streamlined Development Workflow
 
-### Core Development Commands (in execution order)
+### Core Commands (Token-Efficient with Parallel Agents)
 ```bash
-# c00: Enhance pre-PRD into comprehensive PRD
-claude-code commands/c00-prd-enhancer.md
+# 1. Enhance PRD (One-time)
+claude-code commands/prd-enhance.md
 
-# c01: Initial environment setup
-claude-code commands/c01-environment-setup.md
+# 2. Setup Environment (One-time)  
+claude-code commands/env-setup.md
 
-# c02: Create feature specifications from PRD
-claude-code commands/c02-feature-creator.md
+# 3. Plan Features (Parallel planning of 2 features at once)
+claude-code commands/feature-plan.md
 
-# c03: Generate test datasets for specific features
-claude-code commands/c03-dataset-generator.md --feature=feature_001
-
-# c04: Implement features with SOLID architecture
-claude-code commands/c04-feature-developer.md --feature=feature_001
-
-# c05: Execute comprehensive testing with LLM monitoring
-claude-code commands/c05-feature-tester.md --feature=feature_001
+# 4. Implement Features (Parallel implementation of 2 steps at once)
+claude-code commands/feature-implement.md
 ```
 
-### Utility Commands (used internally by other commands)
-```bash
-# c08: Manage conversation context efficiently (high-level utility)
-claude-code commands/c08-context-manager.md --feature=feature_001
+### Intelligent Progress Tracking
+- **Smart Resume**: Commands automatically detect what's already done
+- **Parallel Agents**: Launches up to 2 Claude agents simultaneously
+- **Token Efficient**: Each command focuses on one specific task
+- **Dependency Aware**: Prevents conflicts and ensures correct order
 
-# c09: Track progress across all features (high-level utility)
-claude-code commands/c09-progress-tracker.md
+### Development Flow Examples
+```bash
+# Complete project setup (run once)
+claude-code commands/prd-enhance.md     # ✅ Enhances PRD with detailed features
+claude-code commands/env-setup.md       # ✅ Creates project structure in src/
+
+# Feature planning (run until all planned)
+claude-code commands/feature-plan.md    # 🚀🚀 Plans 2 features in parallel
+claude-code commands/feature-plan.md    # 🚀🚀 Plans next 2 features
+claude-code commands/feature-plan.md    # 🚀 Plans final feature
+
+# Feature implementation (run until all implemented)  
+claude-code commands/feature-implement.md  # 🚀🚀 Implements 2 steps in parallel
+claude-code commands/feature-implement.md  # 🚀🚀 Continues with next 2 steps
+# ... repeat until all features complete
 ```
 
-### Feature-Specific Development
+### Smart Progress Awareness
 ```bash
-# Work on specific feature types (customize for your domain)
-claude-code commands/c04-feature-developer.md --feature=feature_001 --type=data-processing
-claude-code commands/c04-feature-developer.md --feature=feature_002 --type=business-validation
-claude-code commands/c04-feature-developer.md --feature=feature_003 --type=user-interface
+# Commands know current state
+claude-code commands/env-setup.md
+# Output: "✅ Environment already set up. Ready for feature planning."
 
-# Run targeted test suites
-claude-code commands/c05-feature-tester.md --feature=feature_001 --suite=unit
-claude-code commands/c05-feature-tester.md --feature=feature_002 --suite=integration
-claude-code commands/c05-feature-tester.md --feature=feature_003 --suite=e2e
+claude-code commands/feature-plan.md  
+# Output: "✅ All features planned. Ready to implement: feature_001, feature_002"
+
+claude-code commands/feature-implement.md
+# Output: "🚀🚀 Implementing parallel steps: feature_001.step_003, feature_004.step_002"
 ```
+
+### Parallel Agent Management
+- **Automatic Detection**: Finds parallelizable work automatically
+- **Conflict Prevention**: Ensures agents work on safe combinations
+- **Progress Coordination**: Merges results from parallel agents
+- **Dependency Management**: Respects feature and step dependencies
 
 ## Architecture Overview
 

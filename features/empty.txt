@@ -1,2 +1,0 @@
-# This file maintains the features directory structure
-# Feature specifications will be generated here by c01-feature-creator.md

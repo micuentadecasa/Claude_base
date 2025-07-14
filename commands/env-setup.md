@@ -1,55 +1,167 @@
-# Environment Setup Command
+# Intelligent Environment Setup
 
 ## Purpose
-Sets up complete development environment with Python virtual environment, Node.js for frontend, and automated build/run commands.
+Sets up complete development environment with progress tracking and parallel agent support.
 
 ## Usage
 ```bash
-claude-code environment-setup.md --project-name=spanish-nes-analyzer
+claude-code env-setup.md
 ```
 
 ## Instructions
 
-You are an Environment Setup AI that creates complete development environments for feature-driven projects.
+You are an Intelligent Environment Setup AI that creates development environments with built-in progress tracking and parallel execution support.
 
 ### Core Responsibilities:
-1. **Create Python virtual environment** with proper dependencies
-2. **Setup Node.js environment** for React frontend (if needed)
-3. **Generate Makefile** for automated operations
-4. **Configure logging** and monitoring
-5. **Create development scripts** for easy management
+1. **Check if already setup** - Skip if environment exists
+2. **Create project structure** in src/ directory
+3. **Initialize progress tracking** system
+4. **Setup Python environment** with proper dependencies
+5. **Generate configuration files** for development
+6. **Create agent workspace directories** for parallel execution
+7. **Update progress state** to mark environment as ready
 
 ### Environment Structure Created:
 ```
-project_name/
-├── .env                    # Environment variables
-├── .gitignore             # Git ignore patterns
-├── Makefile               # Build and run automation
-├── requirements.txt       # Python dependencies
-├── pyproject.toml        # Python project configuration
-├── backend/              # Python backend (reference implementation)
-│   ├── venv/            # Virtual environment
-│   ├── src/             # Source code
-│   ├── tests/           # Test files
-│   └── logs/            # Application logs
-├── backend_gen/          # Generated agent workspace (for testing)
-│   ├── src/agent/       # LangGraph agent implementation
-│   ├── tests/           # Agent test files
-│   └── langgraph.json   # LangGraph configuration
-├── frontend/            # React frontend (if needed)
-│   ├── package.json     # Node dependencies
-│   ├── src/             # React source
-│   └── dist/            # Build output
-├── commands/            # Claude Code commands
-├── features/            # Feature specifications
-├── datasets/            # Test datasets
-├── progress/            # Progress tracking
-└── context/             # Context management
+src/
+├── .progress.json          # Central progress tracking
+├── .parallel_matrix.json   # Parallel execution safety matrix
+├── project-name/           # Main project (from PRD analysis)
+│   ├── .env               # Environment variables
+│   ├── .gitignore         # Git ignore patterns
+│   ├── Makefile           # Build automation
+│   ├── requirements.txt   # Python dependencies
+│   ├── pyproject.toml     # Python project config
+│   ├── backend/           # Python backend
+│   │   ├── venv/         # Virtual environment
+│   │   ├── app/          # Application code (SOLID structure)
+│   │   ├── tests/        # Test files
+│   │   └── logs/         # Application logs
+│   └── frontend/         # React frontend (if needed)
+├── datasets/              # Test datasets (created by planning)
+├── steps/                 # Implementation steps (created by planning)
+├── .agents/               # Temporary agent workspaces
+│   ├── agent_1/          # Implementation agent 1
+│   └── agent_2/          # Implementation agent 2
+└── .planners/             # Temporary planner workspaces
+    ├── planner_1/         # Planning agent 1
+    └── planner_2/         # Planning agent 2
 ```
 
-## Environment Setup Process:
+## Smart Environment Setup Process:
 
-## 🤖 Conversational Chat Interface Environment Setup
+### Step 1: Environment Check
+```python
+def check_environment_status():
+    """Check if environment is already set up"""
+    
+    if os.path.exists("src/.progress.json"):
+        progress = load_json("src/.progress.json")
+        if progress.get("environment_setup", False):
+            print("✅ Environment already set up. Ready for feature planning.")
+            display_current_status(progress)
+            return True
+    
+    print("🚀 Setting up development environment...")
+    return False
+
+def display_current_status(progress):
+    """Show current project status"""
+    
+    total_features = len(progress.get("features", {}))
+    planned_features = sum(1 for f in progress["features"].values() if f.get("planned", False))
+    
+    if planned_features == 0:
+        print("📋 Next step: Run claude-code feature-plan.md")
+    elif planned_features < total_features:
+        print(f"📋 Planning progress: {planned_features}/{total_features} features planned")
+        print("📋 Next step: Run claude-code feature-plan.md")
+    else:
+        print(f"📋 All {total_features} features planned")
+        print("📋 Next step: Run claude-code feature-implement.md")
+```
+
+### Step 2: Project Structure Creation
+```python
+def create_project_structure():
+    """Create complete project structure"""
+    
+    # Determine project name from PRD
+    project_name = extract_project_name_from_prd()
+    
+    # Create main directories
+    directories = [
+        f"src/{project_name}/backend/app",
+        f"src/{project_name}/backend/tests", 
+        f"src/{project_name}/backend/logs",
+        f"src/{project_name}/frontend",
+        "src/.agents/agent_1",
+        "src/.agents/agent_2", 
+        "src/.planners/planner_1",
+        "src/.planners/planner_2",
+        "src/datasets",
+        "src/steps"
+    ]
+    
+    for directory in directories:
+        os.makedirs(directory, exist_ok=True)
+    
+    return project_name
+```
+
+### Step 3: Progress Tracking Initialization
+```python
+def initialize_progress_tracking(project_name):
+    """Create progress tracking system"""
+    
+    # Extract features from PRD
+    features = extract_features_from_prd()
+    
+    # Initialize progress state
+    progress_state = {
+        "project_name": project_name,
+        "project_status": "environment_setup",
+        "prd_enhanced": True,  # Assume PRD exists if env-setup is run
+        "environment_setup": True,
+        "total_features": len(features),
+        "features": {},
+        "parallel_capacity": 2,
+        "active_agents": [],
+        "last_updated": datetime.now().isoformat()
+    }
+    
+    # Initialize feature tracking
+    for feature_id, feature_name in features.items():
+        progress_state["features"][feature_id] = {
+            "name": feature_name,
+            "planned": False,
+            "datasets_generated": False,
+            "steps_created": False,
+            "steps": {},
+            "implementation_started": False,
+            "implementation_completed": False,
+            "tests_passing": False
+        }
+    
+    # Save progress state
+    save_json("src/.progress.json", progress_state)
+    
+    # Initialize parallel execution matrix
+    parallel_matrix = {
+        "version": "1.0",
+        "features": list(features.keys()),
+        "parallel_safe_features": [],  # Will be populated during planning
+        "parallel_safe_steps": [],     # Will be populated during planning
+        "conflicts": [],
+        "dependencies": {}
+    }
+    
+    save_json("src/.parallel_matrix.json", parallel_matrix)
+    
+    return progress_state
+```
+
+### Step 4: Project Configuration Generation
 
 **CRITICAL**: If your project includes conversational chat functionality, configure additional LangGraph environment:
 

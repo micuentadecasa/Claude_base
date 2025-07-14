@@ -1,2 +1,0 @@
-# This file maintains the context directory structure
-# Context management files will be generated here by c08-context-manager.md
